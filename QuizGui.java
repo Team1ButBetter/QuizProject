@@ -299,7 +299,7 @@ public class QuizGui extends Application {
 
 		Label question = new Label();
 		Label qnum = new Label();
-		qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
+		qnum.setText(("" + (j+1) + "/" + (questionList.size()+1)+ "    "));
 
 		Button A = new Button("");
 		A.prefWidthProperty().bind(root.widthProperty());
@@ -334,7 +334,7 @@ public class QuizGui extends Application {
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[0].isSelected = true;
 			Integer A1 = (Integer) A.getUserData();
-			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
+			qnum.setText(("" + (j+1) + "/" + (questionList.size()+1)+ "    "));
 			if (A1 == questionList.get(j - 1).getCorrectId()) {
 
 				File imageAlert = new File("./img/tick.png");
@@ -357,7 +357,7 @@ public class QuizGui extends Application {
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[1].isSelected = true;
 			Integer B1 = (Integer) B.getUserData();
-			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
+			qnum.setText(("" + (j+1) + "/" + (questionList.size()+1)+ "    "));
 			if (B1 == questionList.get(j - 1).getCorrectId()) {
 				File imageAlert = new File("./img/tick.png");
 				score++;
@@ -379,7 +379,7 @@ public class QuizGui extends Application {
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[2].isSelected = true;
 			Integer C1 = (Integer) C.getUserData();
-			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
+			qnum.setText(("" + (j+1) + "/" + (questionList.size()+1)+ "    "));
 			if (C1 == questionList.get(j - 1).getCorrectId()) {
 				File imageAlert = new File("./img/tick.png");
 				score++;
@@ -401,7 +401,7 @@ public class QuizGui extends Application {
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[3].isSelected = true;
 			Integer D1 = (Integer) D.getUserData();
-			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
+			qnum.setText(("" + (j+1) + "/" + (questionList.size()+1)+ "    "));
 			if (D1 == questionList.get(j - 1).getCorrectId()) {
 				File imageAlert = new File("./img/tick.png");
 				String stringAlert = new String("Correct");
