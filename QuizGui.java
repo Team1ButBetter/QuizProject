@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -41,62 +40,54 @@ public class QuizGui extends Application {
 	public static String LangChoice = new String();
 	int j = 0;
 	int score = 0;
+	ArrayList<Integer> playerClick = new ArrayList<Integer>();
+	ArrayList<Integer> playerChoice = new ArrayList<Integer>();
 	boolean completed = false;
 	String filePath = "test.csv";
 	String quizPath = "./file/dummy_";
+	Button buttonRestart = new Button("Restart Quiz?");
+	
 
-	public static class MathsHelper
-	{
-		static <T> ArrayList<T> shuffle(ArrayList<T> list)
-		{
+	public static class MathsHelper {
+		static <T> ArrayList<T> shuffle(ArrayList<T> list) {
 			ArrayList<T> output = new ArrayList<T>();
 			boolean[] isSelected = new boolean[list.size()];
-			for (boolean bool : isSelected)
-			{
+			for (boolean bool : isSelected) {
 				bool = false;
 			}
-			
-			for(int i = 0; i < list.size(); i++)
-			{
-				int nextIndex = (int)(Math.random() * list.size());
-				
-				if(!isSelected[nextIndex])
-				{
+
+			for (int i = 0; i < list.size(); i++) {
+				int nextIndex = (int) (Math.random() * list.size());
+
+				if (!isSelected[nextIndex]) {
 					isSelected[nextIndex] = true;
 					output.add(list.get(nextIndex));
-				}
-				else
-				{
+				} else {
 					i--;
 				}
 			}
 			return output;
 		}
-		public static double mean(double[] nums)
-		{
+
+		public static double mean(double[] nums) {
 			double sum = 0;
-			for (double num : nums)
-			{
+			for (double num : nums) {
 				sum += num;
 			}
 			return sum / nums.length;
 		}
-		public static double median(double[] nums)
-		{
+
+		public static double median(double[] nums) {
 			int[] ranked = new int[nums.length];
 			boolean[] available = new boolean[nums.length];
-			for(boolean b : available)
-			{
+			for (boolean b : available) {
 				b = true;
 			}
-			for(int i = 0; i < ranked.length; i++)
-			{
+			for (int i = 0; i < ranked.length; i++) {
 				int index = 0;
 				double smallest = nums[index];
-				for(int j = 0; j < nums.length; j++)
-				{
-					if(available[j] && nums[j] < smallest)
-					{
+				for (int j = 0; j < nums.length; j++) {
+					if (available[j] && nums[j] < smallest) {
 						smallest = nums[j];
 						index = j;
 					}
@@ -104,52 +95,47 @@ public class QuizGui extends Application {
 				ranked[i] = index;
 				available[index] = false;
 			}
-			return ranked[(int)Math.floor((nums.length + 1) / 2)];
+			return ranked[(int) Math.floor((nums.length + 1) / 2)];
 		}
-		public static double standardDeviation(double[] nums)
-		{
+
+		public static double standardDeviation(double[] nums) {
 			double mean = mean(nums);
 			double var = 0;
-			for(int i = 0; i < nums.length; i++)
-			{
+			for (int i = 0; i < nums.length; i++) {
 				var += Math.pow(nums[i] - mean, 2);
 			}
 			return Math.sqrt(var);
 		}
-		public static double skew(double[] nums)
-		{
+
+		public static double skew(double[] nums) {
 			double mean = mean(nums);
 			double median = median(nums);
 			double sd = standardDeviation(nums);
 			return (mean - median) / sd;
 		}
 	}
-	
-	public class Answer
-	{
+
+	public class Answer {
 		private SimpleStringProperty text = new SimpleStringProperty(), image = new SimpleStringProperty();
 		public boolean isCorrect, isSelected, isAnswered, isSkipped;
-		
-		public String getText()
-		{
+
+		public String getText() {
 			return text.get();
 		}
-		public void setText(String arg)
-		{
+
+		public void setText(String arg) {
 			this.text.set(arg);
 		}
-		
-		public String getImage()
-		{
+
+		public String getImage() {
 			return image.get();
 		}
-		public void setImage(String imageString)
-		{
+
+		public void setImage(String imageString) {
 			this.image.set(imageString);
 		}
-		
-		Answer(String text, String image, boolean isCorrect)
-		{
+
+		Answer(String text, String image, boolean isCorrect) {
 			setText(text);
 			setImage(image);
 			this.isCorrect = isCorrect;
@@ -158,23 +144,22 @@ public class QuizGui extends Application {
 			isSkipped = false;
 		}
 	}
-	
+
 	public class QuestionData {
 		private SimpleStringProperty quest = new SimpleStringProperty();
 		public Answer[] answers = new Answer[4];
 		public int correctId = 0;
 		int questionNumber;
-		boolean attempted = false;
 		boolean reset = false;
+		boolean attempted = false;
 
-		QuestionData(Answer[] answers, String questionText, int correctId, int qId)
-		{
+		QuestionData(Answer[] answers, String questionText, int correctId, int qId) {
 			this.answers = answers;
 			this.quest.set(questionText);
 			this.correctId = correctId;
 			this.questionNumber = qId;
 		}
-		
+
 		public String getQuestFind() {
 			return quest.get();
 		}
@@ -186,21 +171,19 @@ public class QuizGui extends Application {
 		public Answer[] getAnswers() {
 			return answers;
 		}
-		
-		Answer correctAnswer()
-		{
+
+		Answer correctAnswer() {
 			return answers[correctId];
 		}
-		
-		int getCorrectId()
-		{
+
+		int getCorrectId() {
 			return correctId;
 		}
 	}
 
 	private final ObservableList<QuestionData> questionList = FXCollections.observableArrayList();
 	int[] questionOrder = new int[questionList.size()];
-	int questions = 10;
+	int questions = questionList.size();
 
 	public void start(Stage quizStage) {
 		quizStage.setTitle("Quiz App");
@@ -224,6 +207,33 @@ public class QuizGui extends Application {
 
 		quizStage.show();
 		chooseLang(root);
+
+		buttonRestart.setOnAction(__ -> {
+			if (j-1 < questionList.size()) {
+			questionList.get(j - 1).reset = true;
+			}else
+			{}
+			
+			try {
+				
+				updateStats(filePath, questionList);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			quizPath = "./file/dummy_";
+			LangChoice = new String();
+			j = 0;
+			score = 0;
+			playerClick = new ArrayList<Integer>();
+			playerChoice = new ArrayList<Integer>();
+			completed = false;
+			quizStage.close();
+			root.getChildren().clear();
+			quizStage.setScene(new Scene(new BorderPane(border)));
+			chooseLang(root);
+			quizStage.show();
+
+		});
 	};
 
 	// -------------------------------------------------------------------------------------------------------------------
@@ -238,14 +248,12 @@ public class QuizGui extends Application {
 		Button buttonENG = new Button("", new ImageView(imageEng));
 		buttonENG.prefWidthProperty().bind(root.widthProperty());
 		buttonENG.prefHeightProperty().bind(root.heightProperty());
-		buttonENG.setText("English");
 
 		File imageFileC = new File("./img/cyImg.png");
 		Image imageCym = new Image(imageFileC.toURI().toString());
 		Button buttonCYM = new Button("", new ImageView(imageCym));
 		buttonCYM.prefWidthProperty().bind(root.widthProperty());
 		buttonCYM.prefHeightProperty().bind(root.heightProperty());
-		buttonCYM.setText("Cymraeg");
 
 		LangRoot.getChildren().addAll(buttonENG, buttonCYM);
 		root.getChildren().add(LangRoot);
@@ -290,6 +298,8 @@ public class QuizGui extends Application {
 		QuizRoot.getChildren().addAll(top, mid, bot);
 
 		Label question = new Label();
+		Label qnum = new Label();
+		qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
 
 		Button A = new Button("");
 		A.prefWidthProperty().bind(root.widthProperty());
@@ -304,7 +314,7 @@ public class QuizGui extends Application {
 		D.prefWidthProperty().bind(root.widthProperty());
 		D.prefHeightProperty().bind(root.heightProperty());
 		top.getChildren().addAll(A, B);
-		mid.getChildren().add(question);
+		mid.getChildren().addAll(qnum, question, buttonRestart);
 		mid.prefWidthProperty().bind(root.widthProperty());
 		mid.prefHeightProperty().bind(root.heightProperty());
 		mid.setAlignment(Pos.CENTER);
@@ -316,24 +326,30 @@ public class QuizGui extends Application {
 		D.setUserData(4);
 
 		root.getChildren().add(QuizRoot);
-		Labeled[] buttons = {A, B, C,D};
+		Labeled[] buttons = { A, B, C, D };
 		nextQuestion(question, buttons, root, QuizRoot);
 
 		A.setOnAction((ActionEvent e) -> {
+
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[0].isSelected = true;
 			Integer A1 = (Integer) A.getUserData();
+			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
 			if (A1 == questionList.get(j - 1).getCorrectId()) {
 
 				File imageAlert = new File("./img/tick.png");
 				String stringAlert = new String("Correct");
 				score++;
+				playerClick.add(1);
+				playerChoice.add(1);
 				alertUS(imageAlert, stringAlert);
 				nextQuestion(question, buttons, root, QuizRoot);
 			} else {
 				File imageAlert = new File("./img/cross.png");
 				String stringAlert = new String("Incorrect");
 				alertUS(imageAlert, stringAlert);
+				playerClick.add(1);
+				playerChoice.add(0);
 				nextQuestion(question, buttons, root, QuizRoot);
 			}
 		});
@@ -341,9 +357,12 @@ public class QuizGui extends Application {
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[1].isSelected = true;
 			Integer B1 = (Integer) B.getUserData();
+			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
 			if (B1 == questionList.get(j - 1).getCorrectId()) {
 				File imageAlert = new File("./img/tick.png");
 				score++;
+				playerClick.add(2);
+				playerChoice.add(1);
 				String stringAlert = new String("Correct");
 				alertUS(imageAlert, stringAlert);
 				nextQuestion(question, buttons, root, QuizRoot);
@@ -351,6 +370,8 @@ public class QuizGui extends Application {
 				File imageAlert = new File("./img/cross.png");
 				String stringAlert = new String("Incorrect");
 				alertUS(imageAlert, stringAlert);
+				playerClick.add(2);
+				playerChoice.add(0);
 				nextQuestion(question, buttons, root, QuizRoot);
 			}
 		});
@@ -358,9 +379,12 @@ public class QuizGui extends Application {
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[2].isSelected = true;
 			Integer C1 = (Integer) C.getUserData();
+			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
 			if (C1 == questionList.get(j - 1).getCorrectId()) {
 				File imageAlert = new File("./img/tick.png");
 				score++;
+				playerClick.add(3);
+				playerChoice.add(1);
 				String stringAlert = new String("Correct");
 				alertUS(imageAlert, stringAlert);
 				nextQuestion(question, buttons, root, QuizRoot);
@@ -368,6 +392,8 @@ public class QuizGui extends Application {
 				File imageAlert = new File("./img/cross.png");
 				String stringAlert = new String("Incorrect");
 				alertUS(imageAlert, stringAlert);
+				playerClick.add(3);
+				playerChoice.add(0);
 				nextQuestion(question, buttons, root, QuizRoot);
 			}
 		});
@@ -375,15 +401,21 @@ public class QuizGui extends Application {
 			questionList.get(j - 1).attempted = true;
 			questionList.get(j - 1).answers[3].isSelected = true;
 			Integer D1 = (Integer) D.getUserData();
+			qnum.setText(("" + (j+1) + "/" + questionList.size()+ "    "));
 			if (D1 == questionList.get(j - 1).getCorrectId()) {
 				File imageAlert = new File("./img/tick.png");
 				String stringAlert = new String("Correct");
 				alertUS(imageAlert, stringAlert);
+				score++;
+				playerClick.add(4);
+				playerChoice.add(1);
 				nextQuestion(question, buttons, root, QuizRoot);
 			} else {
 				File imageAlert = new File("./img/cross.png");
 				String stringAlert = new String("Incorrect");
 				alertUS(imageAlert, stringAlert);
+				playerClick.add(4);
+				playerChoice.add(0);
 				nextQuestion(question, buttons, root, QuizRoot);
 			}
 		});
@@ -397,21 +429,19 @@ public class QuizGui extends Application {
 	public void nextQuestion(Labeled question, Labeled[] buttons, Pane root, Object QuizRoot) {
 
 		ArrayList<SimpleIntegerProperty> orderObj = new ArrayList<SimpleIntegerProperty>();
-		for(int i = 0; i < 4; i++)
-		{
+		for (int i = 0; i < 4; i++) {
 			orderObj.add(new SimpleIntegerProperty(i));
 		}
-		//TODO: if answers are to be shuffled, how the text and images are displayed on the buttons needs to be similarly updated
-		//orderObj = MathsHelper.shuffle(orderObj);
+		// TODO: if answers are to be shuffled, how the text and images are displayed on
+		// the buttons needs to be similarly updated
+		// orderObj = MathsHelper.shuffle(orderObj);
 		int[] order = new int[orderObj.size()];
-		for(int i = 0; i < orderObj.size(); i++)
-		{
+		for (int i = 0; i < orderObj.size(); i++) {
 			order[i] = orderObj.get(i).get();
 		}
 		if (j < questionList.size() && questionList.get(j) != null) {
 			question.setText(questionList.get(j).getQuestFind());
-			for(int i = 0; i < buttons.length; i++)
-			{
+			for (int i = 0; i < buttons.length; i++) {
 				buttons[i].setText(questionList.get(j).getAnswer(order[i]).getText());
 				File imageFile = new File(questionList.get(j).getAnswer(order[i]).getImage());
 				Image image = new Image(imageFile.toURI().toString());
@@ -419,13 +449,10 @@ public class QuizGui extends Application {
 			}
 		} else {
 			root.getChildren().remove(QuizRoot);
-			getResult();
-			try
-			{
+			getResult(question, root);
+			try {
 				updateStats(filePath, questionList);
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -436,14 +463,55 @@ public class QuizGui extends Application {
 	// Get Results
 	// -------------------------------------------------------------------------------------------------------------------
 
-	private void getResult() {
+	private void getResult(Labeled question, Pane root) {
 
 		VBox ResultRoot = new VBox();
-		HBox middle = new HBox();
+		Label title = new Label("Results:");
+		Label lbs[];
+		lbs = new Label[questionList.size()];
+		String Additive = new String();
 
-		ResultRoot.getChildren().addAll(middle);
+		for (int i = 0; i < questionList.size(); i++) {
+			if (playerClick.get(i) == 1) {
+				Additive = questionList.get(i).answers[0].getText();
+			}
+			;
+			if (playerClick.get(i) == 2) {
+				Additive = questionList.get(i).answers[1].getText();
+			}
+			;
+			if (playerClick.get(i) == 3) {
+				Additive = questionList.get(i).answers[2].getText();
+			}
+			;
+			if (playerClick.get(i) == 4) {
+				Additive = questionList.get(i).answers[3].getText();
+			}
+			;
+			Image arrow = null;
+			if (playerChoice.get(i) == 1) {
+				File fill = new File("./img/tick.png");
+				arrow = new Image(fill.toURI().toString(), 60, 60, false, false);
 
-		Label results = new Label();
+			}
+			;
+
+			if (playerChoice.get(i) == 0) {
+				File fill = new File("./img/cross.png");
+				arrow = new Image(fill.toURI().toString(), 60, 60, false, false);
+			}
+			;
+
+			String String = questionList.get(i).getQuestFind() + "     " + Additive;
+			;
+			lbs[i] = new Label(String);
+			lbs[i].setGraphic(new ImageView(arrow));
+
+		}
+
+		ResultRoot.getChildren().addAll(lbs);
+		root.getChildren().addAll(buttonRestart, title, ResultRoot);
+
 		System.out.println("Done");
 		completed = true;
 	}
@@ -497,20 +565,19 @@ public class QuizGui extends Application {
 				String[] Sfields = line.split(FieldDelimiter, -1);
 				String questField = (Sfields[0]);
 				Answer[] answers = new Answer[4];
-				for(int i = 1; i < 5; i++)
-				{
+				for (int i = 1; i < 5; i++) {
 					answers[i - 1] = new Answer(Sfields[i], Sfields[i + 5], i == Integer.parseInt(Sfields[5]));
 				}
 				int answerCorrect = Integer.parseInt(Sfields[5]);
-				
+
 				QuestionData questionrecord = new QuestionData(answers, questField, answerCorrect, k);
 				k++;
 				questionArr.add(questionrecord);
 			}
-			
+
 			questionArr = MathsHelper.shuffle(questionArr);
 			questionList.setAll(questionArr);
-			
+
 			quizStart(root);
 			// exceptions
 		} catch (FileNotFoundException ex) {
@@ -519,125 +586,103 @@ public class QuizGui extends Application {
 			Logger.getLogger(QuizGui.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
+
 	// -------------------------------------------------------------------------------------------------------------------
 	// Acquire statistical data
 	// -------------------------------------------------------------------------------------------------------------------
-	public void updateStats(String filePath, ObservableList<QuestionData> questions) throws IOException, FileNotFoundException
-	{
+	public void updateStats(String filePath, ObservableList<QuestionData> questions)
+			throws IOException, FileNotFoundException {
 		File statsFile = new File(filePath);
-		if(!statsFile.exists())
-		{
+		if (!statsFile.exists()) {
 			FileWriter writer = new FileWriter(statsFile, true);
-			try
-			{
+			try {
 				statsFile.createNewFile();
 				String s = "0,0,A,A,A" + System.getProperty("line.separator");
-				for(int i = 0; i < questionList.size(); i++)
-				{
+				for (int i = 0; i < questionList.size(); i++) {
 					s += System.getProperty("line.separator") + Integer.toString(i);
-					for(int k = 0; k < 8; k++)
-					{
+					for (int k = 0; k < 8; k++) {
 						s += ",0";
 					}
 				}
 				writer.write(s);
-			}
-			catch(IOException ex)
-			{
+			} catch (IOException ex) {
 				System.out.println("save failed");
 			}
 			writer.close();
 		}
 		BufferedReader nextLine = new BufferedReader(new FileReader(statsFile));
-		//user data
+		// user data
 		String userData = nextLine.readLine();
-		//quiz data
+		// quiz data
 		String[] dataValues;
 		int[] quizStats = {};
 		String valuesString = "";
-		if((valuesString = nextLine.readLine()) != null)
-		{
+		if ((valuesString = nextLine.readLine()) != null) {
 			dataValues = valuesString.split(",");
-			if(completed)
-			{
+			if (completed) {
 				quizStats = new int[dataValues.length + 1];
-				for(int i = 0; i < dataValues.length; i++)
-				{
+				for (int i = 0; i < dataValues.length; i++) {
 					quizStats[i] = Integer.parseInt(dataValues[i]);
 				}
 				quizStats[1]++;
 				quizStats[quizStats.length - 1] = score;
-			}
-			else
-			{
+			} else {
 				quizStats = new int[dataValues.length];
-				for(int i = 0; i < dataValues.length; i++)
-				{
+				for (int i = 0; i < dataValues.length; i++) {
 					quizStats[i] = Integer.parseInt(dataValues[i]);
 				}
 			}
 			quizStats[0]++;
 		}
-			
-		//question data
+
+		// question data
 		ArrayList<int[]> questionStats = new ArrayList<int[]>();
-		while((valuesString = nextLine.readLine()) != null)
-		{
+		while ((valuesString = nextLine.readLine()) != null) {
 			dataValues = valuesString.split(",");
 			int[] nextArr = new int[dataValues.length];
-			for(int i = 0; i < nextArr.length; i++)
-			{
+			for (int i = 0; i < nextArr.length; i++) {
 				nextArr[i] = Integer.parseInt(dataValues[i]);
 			}
 			questionStats.add(nextArr);
 		}
 		nextLine.close();
-		
+
 		String writeString = userData + System.getProperty("line.separator");
-		for(QuestionData question : questions)
-		{
-			for(int i = 0; i < question.answers.length; i++)
-			{
-				if(question.answers[i].isSelected)
-				{
+		for (QuestionData question : questions) {
+			for (int i = 0; i < question.answers.length; i++) {
+				if (question.answers[i].isSelected) {
 					questionStats.get(question.questionNumber)[1 + i]++;
-					if(question.answers[i].isCorrect)
-					{
+					if (question.answers[i].isCorrect) {
 						questionStats.get(question.questionNumber)[5]++;
 					}
 				}
 			}
-			if(question.reset)
-			{
+			if (question.reset) {
 				questionStats.get(question.questionNumber)[6]++;
 			}
-			if(question.attempted)
-			{
+			if (question.attempted) {
 				questionStats.get(question.questionNumber)[7]++;
 			}
 		}
-		
-		//write values back into file
-		
-		//write user data
-		FileWriter writer = new FileWriter(statsFile, false);	//delete contents
+
+		// write values back into file
+
+		// write user data
+		FileWriter writer = new FileWriter(statsFile, false); // delete contents
 		writer.close();
 		writer = new FileWriter(statsFile, true);
 		writer.write(writeString);
 		writeString = "";
-		//write quiz data
-		for(int i : quizStats)
-		{
+		// write quiz data
+		for (int i : quizStats) {
 			writeString += i + ",";
 		}
 		writeString += System.getProperty("line.separator");
-		//write question data
+		// write question data
 		writer.write(writeString);
-		for(int[] record : questionStats)
-		{
+		for (int[] record : questionStats) {
 			writeString = "";
-			for(int i = 0; i < record.length; i++)
-			{
+			for (int i = 0; i < record.length; i++) {
 				writeString += Integer.toString(record[i]) + ",";
 			}
 			writeString += System.getProperty("line.separator");
